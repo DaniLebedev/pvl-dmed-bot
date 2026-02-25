@@ -1,4 +1,5 @@
 const questionsData = require('./questions.json')
+const { GoogleGenerativeAI } = require('@google/generative-ai')
 const fs = require('fs')
 const path = require('path')
 
@@ -68,12 +69,12 @@ class Show {
         try {
             // Читаем текущий файл
             const fileData = JSON.parse(fs.readFileSync(this.questionsPath, 'utf8'))
-            
+
             // Находим вопрос и обновляем только views
             const question = fileData.questions.find(q => q.id === questionId)
             if (question) {
                 question.views = newViews
-                
+
                 // Записываем обратно
                 fs.writeFileSync(
                     this.questionsPath,
@@ -90,13 +91,15 @@ class Show {
     // О нас
     async About(ctx) {
         const text = '🏥 *О клинике:*\n\n' +
-            'Мы работаем с 2010 года\n' +
-            '👨‍⚕️ 50+ врачей\n' +
-            '🕒 С 8 до 20\n\n' +
-            '📞 *Наши контакты:*\n' +
-            '📍 Адрес: ул. Ломова 47\n' +
-            '📱 Телефон: +7 (777) 777-77-77\n' +
-            '📧 Email: info@clinic.kz'
+            'КГП на ПХВ  «Областной реабилитационный центр» оказывает реабилитационную помощь с 1998 года (далее – Центр) и обслуживает детское и подростковое население города Павлодара  и Павлодарской области. Свою деятельность Центр осуществляет в соответствии с лицензиями, согласно базе нормативно - правовых актов по реабилитации.\n\n' +
+            '🕒График работы:\n пн-пт с 8:00 до 18:00,\n сб,вс праздники выходной\n\n' +
+            '🏥 *Наши адреса:*\n\n' +
+            '📍 *Корпус 1:*\n КГП на ПХВ «Областной реабилитационный центр»(Ажар)\nАдрес: ул. Лермонтова,59\n\n*📱Контакты:*\n8(7182) 555210\n8(7182) 555227\n\n' +
+            '📍 *Корпус 3:*\n КГП на ПХВ «Областной реабилитационный центр»(QH)\nАдрес: ул. Торайгырова,46\n\n*📱Контакты:*\n8(7182) 665705\n\n' +
+            '📍 *Корпус 4:*\n КГП на ПХВ «Областной реабилитационный центр»(Қамқорлық)\nАдрес: ул. Ак.Чокина,148\n\n*📱Контакты:*\n8(7182) 669257\n\n';
+
+
+
 
         const keyboard = [
             [{ text: '🔙 Назад', callback_data: 'main_menu' }]
@@ -109,7 +112,7 @@ class Show {
     async Questions(ctx) {
         // Сортируем КОПИЮ для отображения (оригинальный порядок не меняется)
         const sortedForDisplay = [...this.questions].sort((a, b) => b.views - a.views)
-        
+
         let keyboard = sortedForDisplay.map(quest => ([
             {
                 text: `• ${quest.question}`,
@@ -125,10 +128,10 @@ class Show {
     // Показать ответ на вопрос
     async showAnswer(ctx, data) {
         const id = parseInt(data.split('_')[1])
-        
+
         // Ищем вопрос в массиве
         const qIndex = this.questions.findIndex(q => q.id === id)
-        
+
         if (qIndex !== -1) {
             // Увеличиваем просмотры
             this.questions[qIndex].views++
@@ -151,7 +154,8 @@ class Show {
         const text = '📋 *Доступные команды:*\n\n' +
             '/start - Запуск\n' +
             '/about - О нас\n' +
-            '/faq - Вопросы и ответы'
+            '/faq - Вопросы и ответы\n'+
+            '/ai - Консультация с ии'
 
         const keyboard = [
             [{ text: '🔙 Назад', callback_data: 'main_menu' }]
@@ -164,7 +168,7 @@ class Show {
     async MainMenu(ctx) {
         const text = '🏠 *Главное меню*\n\nВыберите раздел:'
         const keyboard = [
-            [{ text: '❓ FAQ', callback_data: 'm_faq' }],
+            [{ text: '❓Вопросы и ответы', callback_data: 'm_faq' }],
             [{ text: '🏥 О нас', callback_data: 'm_about' }],
             [{ text: '📋 Помощь', callback_data: 'm_help' }]
         ]
